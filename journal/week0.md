@@ -1,6 +1,7 @@
 # Week 0 — Billing and Architecture
 
 - Learnt about what is to be considered when coming up with a good archetucture diagram for a product to be developed.
+
 - Configured Gitpod and AWS CLI on my local machine and while using Gitpod.
 
 ![AWSCLI](images/week_0/AWS%20CLI.png "AWSCLI")
