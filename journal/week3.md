@@ -39,3 +39,57 @@ REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
 REACT_APP_AWS_USER_POOLS_ID: "us-east-1_1WI1VxrWh"
 REACT_APP_CLIENT_ID: "590kv9pi7fcgb2fnps1sigrbjm"
 ```
+
+## Conditionally show components based on logged in or logged out
+
+Inside our HomeFeedPage.js
+```
+import { Auth } from 'aws-amplify';
+```
+
+```
+// check if we are authenicated
+const checkAuth = async () => {
+  Auth.currentAuthenticatedUser({
+    // Optional, By default is false. 
+    // If set to true, this call will send a 
+    // request to Cognito to get the latest user data
+    bypassCache: false 
+  })
+  .then((user) => {
+    console.log('user',user);
+    return Auth.currentAuthenticatedUser()
+  }).then((cognito_user) => {
+      setUser({
+        display_name: cognito_user.attributes.name,
+        handle: cognito_user.attributes.preferred_username
+      })
+  })
+  .catch((err) => console.log(err));
+};
+```
+```
+// check when the page loads if we are authenicated. Already exists so no need to add this.
+
+React.useEffect(()=>{
+  loadData();
+  checkAuth();
+}, [])
+```
+
+Update ProfileInfo.js
+
+```
+import { Auth } from 'aws-amplify';
+```
+
+```
+const signOut = async () => {
+  try {
+      await Auth.signOut({ global: true });
+      window.location.href = "/"
+  } catch (error) {
+      console.log('error signing out: ', error);
+  }
+}
+```
