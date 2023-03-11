@@ -36,8 +36,8 @@ Add the following code in the docker file under frontend:
 ```
 REACT_APP_AWS_PROJECT_REGION: "${AWS_DEFAULT_REGION}"
 REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
-REACT_APP_AWS_USER_POOLS_ID: "us-east-1_1WI1VxrWh"
-REACT_APP_CLIENT_ID: "590kv9pi7fcgb2fnps1sigrbjm"
+REACT_APP_AWS_USER_POOLS_ID: ""
+REACT_APP_CLIENT_ID: ""
 ```
 
 ## Conditionally show components based on logged in or logged out
@@ -92,4 +92,42 @@ const signOut = async () => {
       console.log('error signing out: ', error);
   }
 }
+```
+
+## Signin Page
+
+```
+import { Auth } from 'aws-amplify';
+```
+
+```
+const onsubmit = async (event) => {
+    setErrors('')
+    event.preventDefault();
+    try {
+      Auth.signIn(email, password)
+        .then(user => {
+          localStorage.setItem("access_token", user.signInUserSession.accessToken.jwtToken)
+          window.location.href = "/"
+        })
+        .catch(err => { console.log('Error!', err) });
+    } catch (error) {
+      if (error.code == 'UserNotConfirmedException') {
+        window.location.href = "/confirm"
+      }
+      setErrors(error.message)
+    }
+    return false
+  }
+```
+
+Run the command below to enforce a user
+
+```
+aws cognito-idp admin-set-user-password \
+  --user-pool-id <your-user-pool-id> \
+  --username <username> \
+  --password <password> \
+  --permanent
+
 ```
