@@ -1,21 +1,82 @@
 # Week 3 — Decentralized Authentication
 
+Decentralized authentication refers to the process of verifying the identity of a user without relying on a central authority or a single point of control.
+
+### Benefits of Decentralized Authentication
+- Enhanced security.
+- Privacy.
+- Control over personal data. 
+- Eliminates the risk of a single point of failure, which can occur in centralized authentication systems.
+
+### Shortcomings of Decentralized Authentication
+- Management of decentralized identities.
+- Ensuring interoperability between different systems.
+
+### Tools and technologies used for decentralized authentication
+
+- **Blockchain**: Blockchain technology provides a decentralized and tamper-resistant ledger that can be used to store and verify identity information.
+
+- **Decentralized Identity (DID) systems**: DID systems, such as Microsoft's Identity Overlay Network (ION), offer a way to manage and control decentralized identities. These systems enable users to create and manage their own digital identities, which can be used to authenticate their identity.
+
+- **Self-Sovereign Identity (SSI) frameworks**: SSI frameworks, such as Hyperledger Indy, provide a set of standards and protocols for creating and managing decentralized identities. These frameworks enable users to control their identity information and determine who has access to it.
+
+- **Identity wallets**: Identity wallets, such as Metamask, enable users to securely store and manage their decentralized identities and access them when needed.
+
+- **Two-Factor Authentication (2FA) tools**: 2FA tools, such as Google Authenticator or Authy, provide an additional layer of security to decentralized authentication by requiring a second factor, such as a one-time code or biometric authentication, in addition to a password or other credentials.
+
+- **Multi-factor authentication (MFA) tools**: MFA tools, such as Okta or Duo, provide multiple layers of authentication, such as something the user knows (password), something the user has (a smartphone), and something the user is (biometric authentication).
+
+## Amazon Cognito
+Amazon Cognito is a managed authentication, authorization, and user management service provided by Amazon Web Services (AWS). It is designed to make it easy for developers to add user sign-up, sign-in, and access control to their web and mobile applications.
+
+### Amazon Cognito's features
+
+- **User sign-up and sign-in**: Amazon Cognito provides a secure and scalable way to enable user registration and authentication using popular identity providers such as Amazon, Facebook, Google, and Apple.
+
+- **User directory management**: Amazon Cognito allows developers to create and manage user directories to store and manage user profiles, groups, and permissions.
+
+- **Security and authentication**: Amazon Cognito provides secure token-based authentication, multi-factor authentication (MFA), and adaptive authentication to protect user accounts from unauthorized access.
+
+- **Integration with AWS services**: Amazon Cognito integrates with other AWS services such as AWS Lambda, Amazon API Gateway, and Amazon S3, making it easy to build scalable and secure applications.
+
+- **Social identity providers**: Amazon Cognito supports popular social identity providers such as Facebook, Google, and Amazon, allowing users to sign in to applications using their existing social media accounts.
+
+- **Customizable user flows**: Amazon Cognito provides customizable user flows for sign-up, sign-in, and password recovery, allowing developers to tailor the user experience to their specific application needs.
+
+## JSON Web Token (JWT)
+JSON Web Token (JWT) is a compact and self-contained mechanism for transmitting information between parties as a JSON object. JWTs are often used for authentication and authorization purposes in web applications and APIs.
+
+A JWT consists of three parts: header, a payload and a signature.
+- The header contains information about the type of token and the signing algorithm used to generate the signature.
+- The payload contains the claims or assertions about the user or entity, such as user ID or role.
+- The signature is used to verify the authenticity of the token and ensure that it has not been tampered with.
+
+### Benefits of JWTs
+
+- **Stateless**: JWTs are self-contained and do not require the server to maintain any session state, making them scalable and easier to deploy in distributed systems.
+
+- **Secure**: JWTs can be signed and encrypted to ensure their authenticity and confidentiality.
+
+- **Cross-domain**: JWTs can be used to authorize access to resources across different domains and services.
+
+- **Standardized**: JWTs are a standardized format with well-defined claims and headers, making them interoperable across different systems and platforms.
+
 ## Provision Cognito User Group
-Using the AWS Console we'll create a Cognito User Group
+Using the AWS Console, create a Cognito User Group
 
 ## Install AWS Amplify
 cd into frontend folder and run
-```
+```bash
 npm i aws-amplify --save
 ```
 
 ## Configure Amplify
-We need to hook up our cognito pool to our code in the App.js
-```
+Hook up cognito pool to code in the `App.js`
+```js
 import { Amplify } from 'aws-amplify';
 ```
 
-```
+```js
 Amplify.configure({
   "AWS_PROJECT_REGION": process.env.REACT_APP_AWS_PROJECT_REGION,
   "aws_cognito_region": process.env.REACT_APP_AWS_COGNITO_REGION,
@@ -32,8 +93,8 @@ Amplify.configure({
 });
 ```
 
-Add the following code in the docker file under frontend:
-```
+Add the following code in the `docker file` under frontend:
+```yml
 REACT_APP_AWS_PROJECT_REGION: "${AWS_DEFAULT_REGION}"
 REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
 REACT_APP_AWS_USER_POOLS_ID: ""
@@ -42,12 +103,12 @@ REACT_APP_CLIENT_ID: ""
 
 ## Conditionally show components based on logged in or logged out
 
-Inside our HomeFeedPage.js
-```
+Inside `HomeFeedPage.js`
+```js
 import { Auth } from 'aws-amplify';
 ```
 
-```
+```js
 // check if we are authenicated
 const checkAuth = async () => {
   Auth.currentAuthenticatedUser({
@@ -68,7 +129,7 @@ const checkAuth = async () => {
   .catch((err) => console.log(err));
 };
 ```
-```
+```js
 // check when the page loads if we are authenicated. Already exists so no need to add this.
 
 React.useEffect(()=>{
@@ -77,13 +138,13 @@ React.useEffect(()=>{
 }, [])
 ```
 
-Update ProfileInfo.js
+Update `ProfileInfo.js`
 
-```
+```js
 import { Auth } from 'aws-amplify';
 ```
 
-```
+```js
 const signOut = async () => {
   try {
       await Auth.signOut({ global: true });
@@ -96,11 +157,11 @@ const signOut = async () => {
 
 ## Signin Page
 
-```
+```js
 import { Auth } from 'aws-amplify';
 ```
 
-```
+```js
 const onsubmit = async (event) => {
     setErrors('')
     event.preventDefault();
@@ -123,11 +184,11 @@ const onsubmit = async (event) => {
 
 ## Signup Page
 
-```
+```js
 import { Auth } from 'aws-amplify';
 ```
 
-```
+```js
   const resend_code = async (event) => {
     setErrors('')
     try {
@@ -148,7 +209,7 @@ import { Auth } from 'aws-amplify';
   }
 ```
 
-```
+```js
   const onsubmit = async (event) => {
     event.preventDefault();
     setErrors('')
@@ -164,11 +225,11 @@ import { Auth } from 'aws-amplify';
 
 ## Recovery Page
 
-```
+```js
 import { Auth } from 'aws-amplify';
 ```
 
-```
+```js
 const onsubmit_send_code = async (event) => {
     event.preventDefault();
     setErrors('')
@@ -179,7 +240,7 @@ const onsubmit_send_code = async (event) => {
   }
 ```
 
-```
+```js
 const onsubmit_confirm_code = async (event) => {
     event.preventDefault();
     setErrors('')
@@ -194,7 +255,7 @@ const onsubmit_confirm_code = async (event) => {
   }
 ```
 
-```
+```js
   const onsubmit = async (event) => {
     event.preventDefault();
     setErrors('')
@@ -223,7 +284,7 @@ const onsubmit_confirm_code = async (event) => {
 
 ## Confirmation Page
 
-```
+```js
 import { Auth } from 'aws-amplify';
 ```
 
@@ -271,6 +332,7 @@ Add in the `HomeFeedPage.js` a header to pass along the access token
   ```
 
 In the `app.py`
+
 ```py
 cors = CORS(
   app, 
@@ -279,15 +341,4 @@ cors = CORS(
   expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )
-```
-
-### Run the command below to enforce a user
-
-```
-aws cognito-idp admin-set-user-password \
-  --user-pool-id <your-user-pool-id> \
-  --username <username> \
-  --password <password> \
-  --permanent
-
 ```
