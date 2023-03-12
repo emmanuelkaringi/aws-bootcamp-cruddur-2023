@@ -227,9 +227,60 @@ const onsubmit_confirm_code = async (event) => {
 import { Auth } from 'aws-amplify';
 ```
 
+```js
+const resend_code = async (event) => {
+    setErrors('')
+    try {
+      await Auth.resendSignUp(email);
+      console.log('code resent successfully');
+      setCodeSent(true)
+    } catch (err) {
+      // does not return a code
+      // does cognito always return english
+      // for this to be an okay match?
+      console.log(err)
+      if (err.message == 'Username cannot be empty'){
+        setErrors("You need to provide an email in order to send Resend Activiation Code")   
+      } else if (err.message == "Username/client id combination not found."){
+        setErrors("Email is invalid or cannot be found.")   
+      }
+    }
+  }
+
+  const onsubmit = async (event) => {
+    event.preventDefault();
+    setErrors('')
+    try {
+      await Auth.confirmSignUp(email, code);
+      window.location.href = "/"
+    } catch (error) {
+      setErrors(error.message)
+    }
+    return false
+  }
 ```
 
+## Authenticating Server Side
+
+Add in the `HomeFeedPage.js` a header to pass along the access token
+
+```js
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("access_token")}`
+  }
+  ```
+
+In the `app.py`
+```py
+cors = CORS(
+  app, 
+  resources={r"/api/*": {"origins": origins}},
+  headers=['Content-Type', 'Authorization'], 
+  expose_headers='Authorization',
+  methods="OPTIONS,GET,HEAD,POST"
+)
 ```
+
 ### Run the command below to enforce a user
 
 ```
