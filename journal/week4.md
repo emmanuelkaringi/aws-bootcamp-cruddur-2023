@@ -329,3 +329,22 @@ from lib.db import pool, query_wrap_array
           # the first field being the data
           json = cur.fetchone()
       return json[0]
+
+
+## Establish Connection to RDS database
+In the terminal:
+```
+echo $PROD_CONNECTION_URL
+psql $CONNECTION_URL
+psql $PROD_CONNECTION_URL
+```
+
+In order to connect to the RDS instance we need to provide our Gitpod IP and whitelist for inbound traffic on port 5432.
+
+GITPOD_IP=$(curl ifconfig.me)
+
+We'll create an inbound rule for Postgres (5432) and provide the GITPOD ID.
+
+We'll get the security group rule id so we can easily modify it in the future from the terminal here in Gitpod.
+
+
