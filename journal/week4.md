@@ -218,3 +218,112 @@ VALUES
     current_timestamp + interval '10 day'
   )
 ```
+
+
+## See what connections we are using
+
+Create a new file ib bin `db-session`
+
+```
+NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
+psql $NO_DB_CONNECTION_URL -c "select pid as process_id, \
+       usename as user,  \
+       datname as db, \
+       client_addr, \
+       application_name as app,\
+       state \
+from pg_stat_activity;"
+```
+
+## Easily setup (reset) everything for our database
+Create new file in bin `db-setup`
+
+```
+#! /usr/bin/bash
+
+-e # stop if it fails at any point
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-setup"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
+bin_path="$(realpath .)/bin"
+
+source "$bin_path/db-drop"
+source "$bin_path/db-create"
+source "$bin_path/db-schema-load"
+source "$bin_path/db-seed"
+```
+
+Install Postgres Client
+We need to set the env var for our backend-flask application:
+
+  backend-flask:
+    environment:
+      CONNECTION_URL: "${CONNECTION_URL}"
+https://www.psycopg.org/psycopg3/
+
+We'll add the following to our requirments.txt
+
+```
+psycopg[binary]
+psycopg[pool]
+```
+
+```
+pip install -r requirements.txt
+```
+
+DB Object and Connection Pool
+lib/db.py
+
+from psycopg_pool import ConnectionPool
+import os
+
+def query_wrap_object(template):
+  sql = '''
+  (SELECT COALESCE(row_to_json(object_row),'{}'::json) FROM (
+  {template}
+  ) object_row);
+  '''
+
+def query_wrap_array(template):
+  sql = '''
+  (SELECT COALESCE(array_to_json(array_agg(row_to_json(array_row))),'[]'::json) FROM (
+  {template}
+  ) array_row);
+  '''
+
+connection_url = os.getenv("CONNECTION_URL")
+pool = ConnectionPool(connection_url)
+
+
+In our home activities we'll replace our mock endpoint with real api call:
+
+from lib.db import pool, query_wrap_array
+
+      sql = query_wrap_array("""
+      SELECT
+        activities.uuid,
+        users.display_name,
+        users.handle,
+        activities.message,
+        activities.replies_count,
+        activities.reposts_count,
+        activities.likes_count,
+        activities.reply_to_activity_uuid,
+        activities.expires_at,
+        activities.created_at
+      FROM public.activities
+      LEFT JOIN public.users ON users.uuid = activities.user_uuid
+      ORDER BY activities.created_at DESC
+      """)
+      print(sql)
+      with pool.connection() as conn:
+        with conn.cursor() as cur:
+          cur.execute(sql)
+          # this will return a tuple
+          # the first field being the data
+          json = cur.fetchone()
+      return json[0]
