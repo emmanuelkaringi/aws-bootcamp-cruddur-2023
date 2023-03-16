@@ -348,3 +348,17 @@ We'll create an inbound rule for Postgres (5432) and provide the GITPOD ID.
 We'll get the security group rule id so we can easily modify it in the future from the terminal here in Gitpod.
 
 
+Whenever we need to update our security groups we can do this for access.
+
+export DB_SG_ID=""
+gp env DB_SG_ID=""
+
+
+export DB_SG_RULE_ID=""
+gp env DB_SG_RULE_ID=""
+
+
+aws ec2 modify-security-group-rules \
+    --group-id $DB_SG_ID \
+    --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
+
