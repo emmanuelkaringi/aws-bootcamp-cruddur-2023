@@ -362,3 +362,15 @@ aws ec2 modify-security-group-rules \
     --group-id $DB_SG_ID \
     --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
 
+
+## Setup Cognito post confirmation lambda
+
+Create the handler function
+Create lambda in same vpc as rds instance Python 3.8
+Add a layer for psycopg2 with one of the below methods for development or production
+ENV variables needed for the lambda environment.
+
+PG_HOSTNAME='cruddur-db-instance.czz1cuvepklc.ca-central-1.rds.amazonaws.com'
+PG_DATABASE='cruddur'
+PG_USERNAME='root'
+PG_PASSWORD='huEE33z2Qvl383'
