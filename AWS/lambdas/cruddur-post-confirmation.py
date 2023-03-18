@@ -20,12 +20,7 @@ def lambda_handler(event, context):
           handle, 
           cognito_user_id
           ) 
-        VALUES(
-            '{user_display_name}',
-            '{user_email}',
-            '{user_handle}',
-            '{user_cognito_id}'
-        )
+        VALUES(%s,%s,%s,%s)
       """
       print('SQL Statement ----')
       print(sql)
