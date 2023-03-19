@@ -1,13 +1,15 @@
 #! /usr/bin/bash
-
--e # stop if it fails at any point
+-e # stop excuting this script if it fails at any script of below so don't continue.
 
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
 LABEL="db-setup"
-printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
 
-bin_path="$(realpath .)/bin"
+# Get the absolute path of this script
+ABS_PATH="$(readlink -f "$0")"
+# Get the parent path of this script (bin folder)
+bin_path="$(dirname "$ABS_PATH")"
 
 source "$bin_path/db-drop"
 source "$bin_path/db-create"

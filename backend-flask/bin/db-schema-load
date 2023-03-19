@@ -5,13 +5,19 @@ NO_COLOR='\033[0m'
 LABEL="db-schema-load"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-schema_path="$(realpath .)/db/schema.sql"
-echo $schema_path
+# Get the absolute path of this script
+ABS_PATH=$(readlink -f "$0")
+# Get the parent of the parent path of this script (back-end folder)
+PARENT_DIR="$(dirname "$(dirname "$ABS_PATH")")"
+
+schema_path="$PARENT_DIR/db/schema.sql"
+
 
 if [ "$1" = "prod" ]; then
-  echo "Running in production mode"
+  echo "---------  Running in production mode  ---------"
   URL=$PROD_CONNECTION_URL
 else
+  echo "---------  Running in local mode  --------"
   URL=$CONNECTION_URL
 fi
 
