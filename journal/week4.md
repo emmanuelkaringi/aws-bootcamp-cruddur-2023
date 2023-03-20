@@ -1,6 +1,13 @@
 # Week 4 — Postgres and RDS
 
+## Postgres
+Postgres is a popular open-source relational database management system (RDBMS).
+
+## Amazon Relational Database Service (RDS)
+Amazon Relational Database Service (Amazon RDS) is a collection of managed services that makes it simple to set up, operate, and scale databases in the cloud. 
+
 ## Provision RDS Instance
+```bash
 aws rds create-db-instance \
   --db-instance-identifier cruddur-db-instance \
   --db-instance-class db.t3.micro \
@@ -20,13 +27,15 @@ aws rds create-db-instance \
   --enable-performance-insights \
   --performance-insights-retention-period 7 \
   --no-deletion-protection
+```
 
 ## Connect to psql via the psql client cli tool.
-
+```bash
 psql -Upostgres --host localhost
-
-Common PSQL commands:
 ```
+
+### Common PSQL commands:
+```sql
 \x on -- expanded display when looking at data
 \q -- Quit PSQL
 \l -- List all databases
@@ -46,10 +55,10 @@ DELETE FROM table_name WHERE condition; -- Delete data from a table
 ```
 
 ## Create (and dropping) a database
-```
+```sql
 CREATE database cruddur;
 ```
-```
+```sql
 DROP database cruddur;
 ```
 
@@ -73,56 +82,99 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 For things we commonly need to do we can create a new directory called bin
 
-We'll create an new folder called bin to hold all our bash scripts.
+We'll create a new folder called bin to hold all our bash scripts.
 
 We'll create a new bash script bin/db-connect
 
-`
+```bash
 #! /usr/bin/bash
 
-psql $CONNECTION_URL
-`
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-connect"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
+
+if [ "$1" = "prod" ]; then
+  echo "Running in production mode"
+  URL=$PROD_CONNECTION_URL
+else
+  URL=$CONNECTION_URL
+fi
+
+psql $URL
+```
 
 We'll make it executable:
 
-chmod u+x bin/db-connect
+` chmod u+x bin/db-connect ` 
+
 To execute the script:
 
-./bin/db-connect
+`./bin/db-connect`
 
 ## Shell script to drop the database
-./bin/db-drop
+`./bin/db-drop`
 
+```bash
 #! /usr/bin/bash
 
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-drop"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
 NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
-psql $NO_DB_CONNECTION_URL -c "DROP database cruddur;"
+psql $NO_DB_CONNECTION_URL -c "drop database cruddur;"
+```
 
 We'll make it executable:
 
-chmod u+x bin/db-drop
+`chmod u+x bin/db-drop`
 
 ## Shell script to create the database
-./bin/db-create
+`./bin/db-create`
 
+```bash
 #! /usr/bin/bash
 
-echo "db-drop"
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-create"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
-psql $NO_DB_CONNECTION_URL -c "DROP database cruddur;"
+psql $NO_DB_CONNECTION_URL -c "create database cruddur;"
+```
 
 ## Shell script to load the schema
-bin/db-schema-load
+`./bin/db-schema-load`
 
+```bash
 #! /usr/bin/bash
 
-schema_path="$(realpath .)/db/schema.sql"
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-schema-load"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-echo $schema_path
+# Get the absolute path of this script
+ABS_PATH=$(readlink -f "$0")
+# Get the parent of the parent path of this script (back-end folder)
+PARENT_DIR="$(dirname "$(dirname "$ABS_PATH")")"
 
-NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
-psql $NO_DB_CONNECTION_URL cruddur < $schema_path
+schema_path="$PARENT_DIR/db/schema.sql"
+
+
+if [ "$1" = "prod" ]; then
+  echo "---------  Running in production mode  ---------"
+  URL=$PROD_CONNECTION_URL
+else
+  echo "---------  Running in local mode  --------"
+  URL=$CONNECTION_URL
+fi
+
+psql $URL cruddur < $schema_path
+```
 
 ## Make prints nicer
 We we can make prints for our shell scripts coloured so we can see what we're doing:
@@ -173,9 +225,9 @@ CREATE TABLE public.activities (
 ## Create a seed file
 In `bin` folder, create a new file `db-seed`
 
-chmod u+x bin/db-seed
+`chmod u+x bin/db-seed`
 
-./bin/db-seed
+`./bin/db-seed`
 
 ```bash
 #! /usr/bin/bash
@@ -185,11 +237,12 @@ NO_COLOR='\033[0m'
 LABEL="db-seed"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-echo "db-seed"
+# Get the absolute path of this script
+ABS_PATH=$(readlink -f "$0")
+# Get the parent of the parent path of this script (back-end folder)
+PARENT_DIR="$(dirname "$(dirname "$ABS_PATH")")"
 
-seed_path="$(realpath .)/db/seed.sql"
-
-echo $seed_path
+seed_path="$PARENT_DIR/db/seed.sql"
 
 if [ "$1" = "prod" ]; then
   echo "Running in production mode"
@@ -219,14 +272,27 @@ VALUES
   )
 ```
 
-
 ## See what connections we are using
 
 Create a new file ib bin `db-session`
 
-```
-NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
-psql $NO_DB_CONNECTION_URL -c "select pid as process_id, \
+```bash
+#! /usr/bin/bash
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-session"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
+if [ "$1" = "prod" ]; then
+  echo "Running in production mode"
+  URL=$PROD_CONNECTION_URL
+else
+  URL=$CONNECTION_URL
+fi
+
+NO_DB_URL=$(sed 's/\/cruddur//g' <<<"$URL")
+psql $NO_DB_URL -c "select pid as process_id, \
        usename as user,  \
        datname as db, \
        client_addr, \
@@ -238,17 +304,19 @@ from pg_stat_activity;"
 ## Easily setup (reset) everything for our database
 Create new file in bin `db-setup`
 
-```
+```bash
 #! /usr/bin/bash
-
--e # stop if it fails at any point
+-e # stop excuting this script if it fails at any script of below so don't continue.
 
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
 LABEL="db-setup"
-printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
 
-bin_path="$(realpath .)/bin"
+# Get the absolute path of this script
+ABS_PATH="$(readlink -f "$0")"
+# Get the parent path of this script (bin folder)
+bin_path="$(dirname "$ABS_PATH")"
 
 source "$bin_path/db-drop"
 source "$bin_path/db-create"
@@ -256,13 +324,14 @@ source "$bin_path/db-schema-load"
 source "$bin_path/db-seed"
 ```
 
-Install Postgres Client
+## Install Postgres Client
 We need to set the env var for our backend-flask application:
-
+```
   backend-flask:
     environment:
       CONNECTION_URL: "${CONNECTION_URL}"
 https://www.psycopg.org/psycopg3/
+```
 
 We'll add the following to our requirments.txt
 
@@ -271,13 +340,14 @@ psycopg[binary]
 psycopg[pool]
 ```
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-DB Object and Connection Pool
-lib/db.py
+## DB Object and Connection Pool
+`lib/db.py`
 
+```py
 from psycopg_pool import ConnectionPool
 import os
 
@@ -299,10 +369,11 @@ def query_wrap_array(template):
 
 connection_url = os.getenv("CONNECTION_URL")
 pool = ConnectionPool(connection_url)
-
+```
 
 In our home activities we'll replace our mock endpoint with real api call:
 
+```py
 from lib.db import pool, query_wrap_array
 
       sql = query_wrap_array("""
@@ -329,11 +400,11 @@ from lib.db import pool, query_wrap_array
           # the first field being the data
           json = cur.fetchone()
       return json[0]
-
+```
 
 ## Establish Connection to RDS database
 In the terminal:
-```
+```bash
 echo $PROD_CONNECTION_URL
 psql $CONNECTION_URL
 psql $PROD_CONNECTION_URL
@@ -341,38 +412,36 @@ psql $PROD_CONNECTION_URL
 
 In order to connect to the RDS instance we need to provide our Gitpod IP and whitelist for inbound traffic on port 5432.
 
-GITPOD_IP=$(curl ifconfig.me)
+`GITPOD_IP=$(curl ifconfig.me)`
 
 We'll create an inbound rule for Postgres (5432) and provide the GITPOD ID.
 
 We'll get the security group rule id so we can easily modify it in the future from the terminal here in Gitpod.
 
-
 Whenever we need to update our security groups we can do this for access.
-
+```bash
 export DB_SG_ID=""
 gp env DB_SG_ID=""
 
 
 export DB_SG_RULE_ID=""
 gp env DB_SG_RULE_ID=""
-
-
+```
+```bash
 aws ec2 modify-security-group-rules \
     --group-id $DB_SG_ID \
     --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
-
+```
 
 ## Setup Cognito post confirmation lambda
 
 Create the handler function
 Create lambda in same vpc as rds instance Python 3.8
 
-
 Add a layer for psycopg2 with one of the below methods for development or production
 
 The function
-
+```py
 import json
 import psycopg2
 
@@ -399,6 +468,8 @@ def lambda_handler(event, context):
             print('Database connection closed.')
 
     return event
+```
+
 Development
 https://github.com/AbhimanyuHK/aws-psycopg2
 
@@ -415,7 +486,9 @@ Just go to Layers + in the function console and add a reference for your region
 
 ENV variables needed for the lambda environment.
 
+```
 PG_HOSTNAME='cruddur-db-instance.czz1cuvepklc.ca-central-1.rds.amazonaws.com'
 PG_DATABASE='cruddur'
 PG_USERNAME='root'
-PG_PASSWORD='huEE33z2Qvl383'
+PG_PASSWORD=''
+```
