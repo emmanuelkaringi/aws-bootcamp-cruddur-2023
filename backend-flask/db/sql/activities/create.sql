@@ -11,4 +11,5 @@ VALUES (
   ),
   %(message)s,
   %(expires_at)s
-) RETURNING uuid;
+) 
+RETURNING uuid;
