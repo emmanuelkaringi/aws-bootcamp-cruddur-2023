@@ -106,14 +106,14 @@ psql $URL
 
 We'll make it executable:
 
-` chmod u+x bin/db-connect ` 
+` chmod u+x bin/db/connect ` 
 
 To execute the script:
 
-`./bin/db-connect`
+`./bin/db/connect`
 
 ## Shell script to drop the database
-`./bin/db-drop`
+`./bin/db/drop`
 
 ```bash
 #! /usr/bin/bash
@@ -124,15 +124,15 @@ LABEL="db-drop"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
-psql $NO_DB_CONNECTION_URL -c "drop database cruddur;"
+psql $NO_DB_CONNECTION_URL -c "drop database IF EXISTS cruddur;"
 ```
 
 We'll make it executable:
 
-`chmod u+x bin/db-drop`
+`chmod u+x bin/db/drop`
 
 ## Shell script to create the database
-`./bin/db-create`
+`./bin/db/create`
 
 ```bash
 #! /usr/bin/bash
@@ -147,7 +147,7 @@ psql $NO_DB_CONNECTION_URL -c "create database cruddur;"
 ```
 
 ## Shell script to load the schema
-`./bin/db-schema-load`
+`./bin/db/schema-load`
 
 ```bash
 #! /usr/bin/bash
@@ -157,19 +157,13 @@ NO_COLOR='\033[0m'
 LABEL="db-schema-load"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-# Get the absolute path of this script
-ABS_PATH=$(readlink -f "$0")
-# Get the parent of the parent path of this script (back-end folder)
-PARENT_DIR="$(dirname "$(dirname "$ABS_PATH")")"
-
-schema_path="$PARENT_DIR/db/schema.sql"
-
+schema_path="$(realpath .)/db/schema.sql"
+echo $schema_path
 
 if [ "$1" = "prod" ]; then
-  echo "---------  Running in production mode  ---------"
+  echo "Running in production mode"
   URL=$PROD_CONNECTION_URL
 else
-  echo "---------  Running in local mode  --------"
   URL=$CONNECTION_URL
 fi
 
@@ -225,9 +219,9 @@ CREATE TABLE public.activities (
 ## Create a seed file
 In `bin` folder, create a new file `db-seed`
 
-`chmod u+x bin/db-seed`
+`chmod u+x bin/db/seed`
 
-`./bin/db-seed`
+`./bin/db/seed`
 
 ```bash
 #! /usr/bin/bash
@@ -237,12 +231,8 @@ NO_COLOR='\033[0m'
 LABEL="db-seed"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-# Get the absolute path of this script
-ABS_PATH=$(readlink -f "$0")
-# Get the parent of the parent path of this script (back-end folder)
-PARENT_DIR="$(dirname "$(dirname "$ABS_PATH")")"
-
-seed_path="$PARENT_DIR/db/seed.sql"
+seed_path="$(realpath .)/db/seed.sql"
+echo $seed_path
 
 if [ "$1" = "prod" ]; then
   echo "Running in production mode"
@@ -278,10 +268,9 @@ Create a new file ib bin `db-session`
 
 ```bash
 #! /usr/bin/bash
-
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
-LABEL="db-session"
+LABEL="db-sessions"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 if [ "$1" = "prod" ]; then
@@ -302,26 +291,24 @@ from pg_stat_activity;"
 ```
 
 ## Easily setup (reset) everything for our database
-Create new file in bin `db-setup`
+Create new file in bin `db/setup`
 
 ```bash
 #! /usr/bin/bash
--e # stop excuting this script if it fails at any script of below so don't continue.
+set -e # stop if it fails at any point
 
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
 LABEL="db-setup"
 printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
 
-# Get the absolute path of this script
-ABS_PATH="$(readlink -f "$0")"
-# Get the parent path of this script (bin folder)
-bin_path="$(dirname "$ABS_PATH")"
+bin_path="$(realpath .)/bin"
 
-source "$bin_path/db-drop"
-source "$bin_path/db-create"
-source "$bin_path/db-schema-load"
-source "$bin_path/db-seed"
+source "$bin_path/db/drop"
+source "$bin_path/db/create"
+source "$bin_path/db/schema-load"
+source "$bin_path/db/seed"
+source "$bin_path/db/update_cognito_user_ids"
 ```
 
 ## Install Postgres Client
