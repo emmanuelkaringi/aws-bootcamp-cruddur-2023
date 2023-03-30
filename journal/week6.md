@@ -65,3 +65,99 @@ aws ecs create-cluster \
 --cluster-name cruddur \
 --service-connect-defaults namespace=cruddur
 
+## Gaining Access to ECS Fargate Container
+
+Login to ECR
+
+aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+
+## Create ECR repo and push image
+
+### For Base-image python
+
+aws ecr create-repository \
+  --repository-name cruddur-python \
+  --image-tag-mutability MUTABLE
+
+Set URL
+
+export ECR_PYTHON_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/cruddur-python"
+echo $ECR_PYTHON_URL
+
+Pull Image
+
+docker pull python:3.10-slim-buster
+
+Tag Image
+
+docker tag python:3.10-slim-buster $ECR_PYTHON_URL:3.10-slim-buster
+
+Push Image
+
+docker push $ECR_PYTHON_URL:3.10-slim-buster
+
+For Flask
+
+In your flask dockerfile update the from to instead of using DockerHub's python image you use your own eg.
+
+remember to put the :latest tag on the end
+
+Create Repo
+
+aws ecr create-repository \
+  --repository-name backend-flask \
+  --image-tag-mutability MUTABLE
+
+Set URL
+
+export ECR_BACKEND_FLASK_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/backend-flask"
+echo $ECR_BACKEND_FLASK_URL
+
+Build Image
+
+docker build -t backend-flask .
+
+Tag Image
+
+docker tag backend-flask:latest $ECR_BACKEND_FLASK_URL:latest
+
+Push Image
+
+docker push $ECR_BACKEND_FLASK_URL:latest
+
+For Frontend React
+
+Create Repo
+
+aws ecr create-repository \
+  --repository-name frontend-react-js \
+  --image-tag-mutability MUTABLE
+
+Set URL
+
+export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/frontend-react-js"
+echo $ECR_FRONTEND_REACT_URL
+
+Build Image
+
+docker build \
+--build-arg REACT_APP_BACKEND_URL="https://4567-$GITPOD_WORKSPACE_ID.$GITPOD_WORKSPACE_CLUSTER_HOST" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_CQ4wDfnwc" \
+--build-arg REACT_APP_CLIENT_ID="5b6ro31g97urk767adrbrdj1g5" \
+-t frontend-react-js \
+-f Dockerfile.prod \
+.
+
+Tag Image
+
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+
+Push Image
+
+docker push $ECR_FRONTEND_REACT_URL:latest
+
+If you want to run and test it
+
+docker run --rm -p 3000:3000 -it frontend-react-js 
