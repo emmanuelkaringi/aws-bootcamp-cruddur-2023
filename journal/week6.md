@@ -57,8 +57,8 @@ Make the file executable chmod u+x bin/flask/health-check
 
 ## Create CloudWatch Log Group
 
-aws logs create-log-group --log-group-name "/cruddur/fargate-cluster"
-aws logs put-retention-policy --log-group-name "/cruddur/fargate-cluster" --retention-in-days 1
+aws logs create-log-group --log-group-name cruddur
+aws logs put-retention-policy --log-group-name cruddur --retention-in-days 1
 
 ## Create ECS Cluster
 aws ecs create-cluster \
@@ -98,9 +98,9 @@ docker push $ECR_PYTHON_URL:3.10-slim-buster
 
 For Flask
 
-In your flask dockerfile update the from to instead of using DockerHub's python image you use your own eg.
+In your flask dockerfile update the from to instead of using DockerHub's python image you use your own:
 
-remember to put the :latest tag on the end
+`FROM 257344229169.dkr.ecr.us-east-1.amazonaws.com/cruddur-python:3.10-slim-buster`
 
 Create Repo
 
@@ -113,7 +113,7 @@ Set URL
 export ECR_BACKEND_FLASK_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/backend-flask"
 echo $ECR_BACKEND_FLASK_URL
 
-Build Image
+Build Image - Ensure to cd into `backend-flask`
 
 docker build -t backend-flask .
 
