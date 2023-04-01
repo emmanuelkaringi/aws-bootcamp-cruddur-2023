@@ -292,8 +292,53 @@ frontend-react.json
     ]
 }
 Register Task Defintion
-aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
-aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-react-js.json
+aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/backend-flask.json
+aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/frontend-react-js.json
+
+## Create Launch Template Security Group
+We need the default VPC ID
+
+export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
+--filters "Name=isDefault, Values=true" \
+--query "Vpcs[0].VpcId" \
+--output text)
+echo $DEFAULT_VPC_ID
+Create
+
+export CRUD_CLUSTER_SG=$(aws ec2 create-security-group \
+  --group-name cruddur-ecs-cluster-sg \
+  --description "Security group for Cruddur ECS ECS cluster" \
+  --vpc-id $DEFAULT_VPC_ID \
+  --query "GroupId" --output text)
+echo $CRUD_CLUSTER_SG
+Get the Group ID (after its created)
+
+export CRUD_CLUSTER_SG=$(aws ec2 describe-security-groups \
+--group-names cruddur-ecs-cluster-sg \
+--query 'SecurityGroups[0].GroupId' \
+--output text)
+
+## Create Security Group
+
+export CRUD_SERVICE_SG=$(aws ec2 create-security-group \
+  --group-name "crud-srv-sg" \
+  --description "Security group for Cruddur services on ECS" \
+  --vpc-id $DEFAULT_VPC_ID \
+  --query "GroupId" --output text)
+echo $CRUD_SERVICE_SG
+
+aws ec2 authorize-security-group-ingress \
+  --group-id $CRUD_SERVICE_SG \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+## Create Services
+
+aws ecs create-service --cli-input-json file://AWS/json/service-backend-flask.json
+
+aws ecs create-service --cli-input-json file://AWS/json/frontend-react-js-serv.json
+
 
 ## For Frontend React
 
