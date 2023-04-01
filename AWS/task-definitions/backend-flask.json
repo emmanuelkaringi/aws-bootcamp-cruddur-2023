@@ -7,6 +7,9 @@
       {
         "name": "backend-flask",
         "image": "BACKEND_FLASK_IMAGE_URL",
+        "requiresCompatibilities": [
+          "FARGATE"
+        ],
         "cpu": 256,
         "memory": 512,
         "essential": true,

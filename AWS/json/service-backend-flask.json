@@ -22,10 +22,5 @@
     },
     "propagateTags": "SERVICE",
     "serviceName": "backend-flask",
-    "taskDefinition": "backend-flask",
-    "requiresCompatibilities": [
-        "FARGATE"
-    ], 
-    "cpu": "256", 
-    "memory": "512"
+    "taskDefinition": "backend-flask"
   }
