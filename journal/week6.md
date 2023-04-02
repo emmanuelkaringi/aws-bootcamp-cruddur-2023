@@ -360,8 +360,8 @@ docker build \
 --build-arg REACT_APP_BACKEND_URL="https://4567-$GITPOD_WORKSPACE_ID.$GITPOD_WORKSPACE_CLUSTER_HOST" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
---build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_CQ4wDfnwc" \
---build-arg REACT_APP_CLIENT_ID="5b6ro31g97urk767adrbrdj1g5" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="us-east-1_8cgpXujWt" \
+--build-arg REACT_APP_CLIENT_ID="vmjavhu4g20vha4ccl63pqvle" \
 -t frontend-react-js \
 -f Dockerfile.prod \
 .
