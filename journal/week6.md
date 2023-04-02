@@ -291,10 +291,11 @@ frontend-react.json
       }
     ]
 }
-Register Task Defintion
+
+## Register Task Defintion
 aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/backend-flask.json
 
-aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/frontend-react-js.json
+aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/frontend-react.json
 
 ## Create Launch Template Security Group
 We need the default VPC ID
@@ -338,7 +339,7 @@ aws ec2 authorize-security-group-ingress \
 
 aws ecs create-service --cli-input-json file://AWS/json/service-backend-flask.json
 
-aws ecs create-service --cli-input-json file://AWS/json/frontend-react-js-serv.json
+aws ecs create-service --cli-input-json file://AWS/json/service-frontend-react-js.json
 
 
 ## For Frontend React
@@ -357,7 +358,7 @@ echo $ECR_FRONTEND_REACT_URL
 Build Image
 
 docker build \
---build-arg REACT_APP_BACKEND_URL="https://4567-$GITPOD_WORKSPACE_ID.$GITPOD_WORKSPACE_CLUSTER_HOST" \
+--build-arg REACT_APP_BACKEND_URL="http://cruddur-alb-1813983080.us-east-1.elb.amazonaws.com:4567" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
 --build-arg REACT_APP_AWS_USER_POOLS_ID="us-east-1_8cgpXujWt" \
