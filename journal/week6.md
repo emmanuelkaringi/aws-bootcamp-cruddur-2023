@@ -293,6 +293,7 @@ frontend-react.json
 }
 Register Task Defintion
 aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/backend-flask.json
+
 aws ecs register-task-definition --cli-input-json file://AWS/task-definitions/frontend-react-js.json
 
 ## Create Launch Template Security Group

@@ -1,26 +1,23 @@
 {
-    "cluster": "cruddur",
-    "launchType": "FARGATE",
-    "desiredCount": 1,
-    "enableECSManagedTags": true,
-    "enableExecuteCommand": true,
-    "networkConfiguration": {
-      "awsvpcConfiguration": {
-        "assignPublicIp": "ENABLED",
-        "securityGroups": [
-          "sg-01d0e8b962de2061d"
-        ],
-        "subnets": [
-          "subnet-06fa7706e7785c149",
-          "subnet-02bc9e4fd4381a512",
-          "subnet-0409af42b754aeaac",
-          "subnet-0d27bdbc2d37e9080",
-          "subnet-0b2d978e56cbc78b8",
-          "subnet-06c015d13a4b86bdb"
-        ]
-      }
-    },
-    "propagateTags": "SERVICE",
-    "serviceName": "backend-flask",
-    "taskDefinition": "backend-flask"
-  }
+  "cluster": "cruddur",
+  "launchType": "FARGATE",
+  "desiredCount": 1,
+  "enableECSManagedTags": true,
+  "enableExecuteCommand": true,
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "assignPublicIp": "ENABLED",
+      "securityGroups": [
+        "sg-01d0e8b962de2061d"
+      ],
+      "subnets": [
+        "subnet-06fa7706e7785c149",
+        "subnet-02bc9e4fd4381a512",
+        "subnet-0409af42b754aeaac"
+      ]
+    }
+  },
+  "propagateTags": "SERVICE",
+  "serviceName": "backend-flask",
+  "taskDefinition": "backend-flask"
+}
